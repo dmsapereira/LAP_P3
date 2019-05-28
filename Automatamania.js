@@ -132,13 +132,35 @@ class FiniteAutomaton extends AbstractAutomaton {
 		);
 	}
 
+	getAlphabet(){
+		var result = [];
+		for(var i = 0; i < this.transitions.length; i++)
+			result.push(this.transitions[i][1]);
+		return canonical(result);
+	}
+
   getTransitions() {
     return this.transitions;
   }
 
+	getAcceptStates(){
+		return this.acceptStates;
+	}
+
 	gcut(s, ts) {
 		return [ts.filter(([z,_0,_1]) => z == s),
 				ts.filter(([z,_0,_1]) => z != s)];
+	}
+
+	isDeterministic(){
+		const states = this.getStates();
+		for (var i = 0; i < this.transitions.length; i++){
+			var transitions = this.gcut(states[i], this.transitions)[0];
+			transitions = transitions.map((x,y,_0) => (x,y));
+			if (transitions.length != canonicalPrimitive(transitions).length)
+				return false;
+		}
+		return true;
 	}
 
 	reachableX(s, ts) {
@@ -360,8 +382,10 @@ class CyGraph {
 
 function onLoadAction(event) {
 	cyGraph = CyGraph.sampleGraph();
-
-
+	states.value = cyGraph.fa.getStates().length;
+	accept_states.value = cyGraph.fa.getAcceptStates().length;
+	alph_size.value = cyGraph.fa.getAlphabet().length;
+	deterministic.value = cyGraph.fa.isDeterministic() ? "Yes" : "No";
 }
 
 function op1Action(event) {

@@ -241,7 +241,6 @@ function testAll() {
 
 
 /* CYTOSCAPE GRAPHS AND USER INTERFACE -------------------------------------- */
-
 // global constants and variables
 var cyGraph;
 
@@ -375,11 +374,37 @@ class CyGraph {
 			abc
 		);
 	}
+
+
+
+
 }
 
 
 /* EVENT HANDLING ----------------------------------------------------------- */
+//Auxiliary Functions
+function findSelectedState(){
+		const states = cyGraph.fa.getStates();
+		for(var i = 0; i < states.length; i++)
+			if(cyGraph.cy.$('#' + states[i]).selected())
+					return states[i];
+		return null;
+}
 
+function getStateNode(state){
+	return cyGraph.cy.$('#' + state);
+}
+
+function getSelectedNode(){
+	const nodes = cyGraph.cy.nodes().toArray();
+	for(var i = 0; i < cyGraph.cy.nodes().size(); i++){
+		if(nodes[i].selected())
+				return nodes[i];
+	}
+	return null;
+}
+
+//HTML Functions
 function onLoadAction(event) {
 	cyGraph = CyGraph.sampleGraph();
 	states.value = cyGraph.fa.getStates().length;
@@ -389,7 +414,14 @@ function onLoadAction(event) {
 }
 
 function op1Action(event) {
-	alert("OP1 " + event);
+	const transitions = cyGraph.fa.getTransitions();
+	if(findSelectedState() == null)
+		getStateNode(cyGraph.cy.fa.initialState).select();
+	const selectedState = findSelectedState();
+	const reachStates = canonical(cyGraph.fa.reachableX(selectedState, transitions));
+	for(var i = 0; i < reachStates.length; i++)
+			getStateNode(reachStates[i]).style('background-color', 'purple');
+	getStateNode(selectedState).style('background-color', 'blue');
 }
 
 function op2Action(event) {

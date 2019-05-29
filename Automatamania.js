@@ -154,14 +154,6 @@ class FiniteAutomaton extends AbstractAutomaton {
 		return result;
 	}
 
-  getTransitions() {
-    return this.transitions;
-  }
-
-	getAcceptStates(){
-		return this.acceptStates;
-	}
-
 	gcut(s, ts) {
 		return [ts.filter(([z,_0,_1]) => z == s),
 				ts.filter(([z,_0,_1]) => z != s)];
@@ -169,8 +161,14 @@ class FiniteAutomaton extends AbstractAutomaton {
 
 	isDeterministic(){
 		const states = this.getStates();
-		const stateAndSymbol = this.transitions.flatMap([x,y,_0 => (x,y));
-		return (this.transitions.length != canonicalPrimitive(stateAndSymbol).length);
+		var t, symb;
+		for(var state of states){
+			t = this.transitions.filter(([x,_0,_1]) => x == state)
+			symb = t.map(([_0,y,_1]) => y);
+			if(canonical(symb).length != t.length)
+				return false;
+		}
+		return true;
 	}
 
 	reachableX(s, ts) {
@@ -327,8 +325,17 @@ class CyGraph {
 		spec.container = document.getElementById('cy');  // the graph is placed in the DIV 'cy'
 		this.cy = cytoscape(spec);
 		this.cy.$('#START').select();
+		this.cy.boxSelectionEnabled(false);
 //		this.cy.on('select', e => alert(e.target.id()));
 		this.fa = fa;
+		this.refreshStatistics();
+	}
+
+	refreshStatistics(){
+		states.value = this.fa.getStates().length;
+		accept_states.value = this.fa.acceptStates.length;
+		alph_size.value = this.fa.getAlphabet().length;
+		deterministic.value = this.fa.isDeterministic() ? "Yes" : "No";
 	}
 
 	static build(fa) {
@@ -340,7 +347,7 @@ class CyGraph {
       return { data: { source: transition[0], symbol: transition[1], target: transition[2] } }
     }
 		const nodes = fa.getStates().map(buildStates);
-		const edges = fa.getTransitions().map(buildEdges);
+		const edges = fa.transitions.map(buildEdges);
 		return new CyGraph(nodes, edges, fa);
 	}
 
@@ -398,13 +405,17 @@ function getStateNode(state){
 	return cyGraph.cy.$('#' + state);
 }
 
+function getSelectedState(){
+	return cyGraph.cy.$(':selected').data('name');
+}
+
 function paintReachableNodes(){
-	const transitions = cyGraph.fa.getTransitions();
-	var selectedState = cyGraph.cy.$(':selected').data('name');
-	if(selectedState == undefined)
-				selectedState = cyGraph.cy.$('#' + cyGraph.cy.fa.initialState);
-	const reachStates = canonicalPrimitive(cyGraph.fa.reachableX(selectedState,
-											transitions)).slice(1);
+	const transitions = cyGraph.fa.transitions;
+	if(getSelectedState() == undefined)
+				getStateNode(cyGraph.fa.initialState).select();
+	const reachStates =
+			canonicalPrimitive(cyGraph.fa.reachableX(getSelectedState()
+																		,transitions)).slice(1);
 	reachStates.forEach(state =>
 		getStateNode(state).style('background-color', 'purple'));
 }
@@ -423,10 +434,7 @@ function paintUsefulNodes(){
 //HTML Functions
 function onLoadAction(event) {
 	cyGraph = CyGraph.sampleGraph();
-	states.value = cyGraph.fa.getStates().length;
-	accept_states.value = cyGraph.fa.getAcceptStates().length;
-	alph_size.value = cyGraph.fa.getAlphabet().length;
-	deterministic.value = cyGraph.fa.isDeterministic() ? "Yes" : "No";
+	cyGraph.refreshStatistics();
 }
 
 function op1Action(event) {
@@ -442,7 +450,6 @@ function op3Action(event) {
 }
 
 function op4Action(event){
-	console.log(cyGraph.fa.getAlphabet());
 }
 
 function fileSelectAction(event) {
@@ -450,15 +457,12 @@ function fileSelectAction(event) {
 	if( file == undefined ) // if canceled
 		return;
 	const reader = new FileReader();
-	reader.onload = function(event) { CyGraph.load(event.target.result); };
+	reader.onload = function(event) { cyGraph = CyGraph.load(event.target.result); };
 	reader.readAsText(file);
-
-	states.value = cyGraph.fa.getStates().length;
-	accept_states.value = cyGraph.fa.getAcceptStates().length;
-	alph_size.value = cyGraph.fa.getAlphabet().length;
-	deterministic.value = cyGraph.fa.isDeterministic() ? "Yes" : "No";
 }
 
 function reset(event){
-	cyGraph.style();
+	const states = cyGraph.fa.getStates();
+	getStateNode(getSelectedState()).unselect();
+		states.forEach(state => getStateNode(state).style('background-color', null));
 }

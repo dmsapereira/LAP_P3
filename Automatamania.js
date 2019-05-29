@@ -139,6 +139,21 @@ class FiniteAutomaton extends AbstractAutomaton {
 		return canonical(result);
 	}
 
+	generateLanguage(n){
+		function generateAux(result, alphabet){
+			result.map(function(curr){
+				var combination = [];
+				for(var j = 0; j < alphabet.length; j++)
+					combination[j] = consLast(alphabet[j],curr);
+			});
+		}
+		const alphabet = this.getAlphabet();
+		var result = alphabet;
+		for(var i = 1; i < n; i++)
+			result = generateAux(result, alphabet);
+		return result;
+	}
+
   getTransitions() {
     return this.transitions;
   }
@@ -154,13 +169,8 @@ class FiniteAutomaton extends AbstractAutomaton {
 
 	isDeterministic(){
 		const states = this.getStates();
-		for (var i = 0; i < this.transitions.length; i++){
-			var transitions = this.gcut(states[i], this.transitions)[0];
-			transitions = transitions.map((x,y,_0) => (x,y));
-			if (transitions.length != canonicalPrimitive(transitions).length)
-				return false;
-		}
-		return true;
+		const stateAndSymbol = this.transitions.flatMap([x,y,_0 => (x,y));
+		return (this.transitions.length != canonicalPrimitive(stateAndSymbol).length);
 	}
 
 	reachableX(s, ts) {
@@ -329,8 +339,8 @@ class CyGraph {
     function buildEdges(transition){
       return { data: { source: transition[0], symbol: transition[1], target: transition[2] } }
     }
-		const nodes = fa.getStates().flatMap(buildStates);
-		const edges = fa.getTransitions().flatMap(buildEdges);
+		const nodes = fa.getStates().map(buildStates);
+		const edges = fa.getTransitions().map(buildEdges);
 		return new CyGraph(nodes, edges, fa);
 	}
 
@@ -383,25 +393,31 @@ class CyGraph {
 
 /* EVENT HANDLING ----------------------------------------------------------- */
 //Auxiliary Functions
-function findSelectedState(){
-		const states = cyGraph.fa.getStates();
-		for(var i = 0; i < states.length; i++)
-			if(cyGraph.cy.$('#' + states[i]).selected())
-					return states[i];
-		return null;
-}
 
 function getStateNode(state){
 	return cyGraph.cy.$('#' + state);
 }
 
-function getSelectedNode(){
-	const nodes = cyGraph.cy.nodes().toArray();
-	for(var i = 0; i < cyGraph.cy.nodes().size(); i++){
-		if(nodes[i].selected())
-				return nodes[i];
-	}
-	return null;
+function paintReachableNodes(){
+	const transitions = cyGraph.fa.getTransitions();
+	var selectedState = cyGraph.cy.$(':selected').data('name');
+	if(selectedState == undefined)
+				selectedState = cyGraph.cy.$('#' + cyGraph.cy.fa.initialState);
+	const reachStates = canonicalPrimitive(cyGraph.fa.reachableX(selectedState,
+											transitions)).slice(1);
+	reachStates.forEach(state =>
+		getStateNode(state).style('background-color', 'purple'));
+}
+
+function paintProductiveNodes(){
+	const productiveStates = cyGraph.fa.productive();
+	productiveStates.forEach(state =>
+			getStateNode(state).style('background-color', 'yellow'));
+}
+
+function paintUsefulNodes(){
+	const usefulNodes = cyGraph.fa.reachable();
+	usefulNodes.forEach(state => getStateNode(state).style('background-color', 'green'));
 }
 
 //HTML Functions
@@ -414,22 +430,19 @@ function onLoadAction(event) {
 }
 
 function op1Action(event) {
-	const transitions = cyGraph.fa.getTransitions();
-	if(findSelectedState() == null)
-		getStateNode(cyGraph.cy.fa.initialState).select();
-	const selectedState = findSelectedState();
-	const reachStates = canonical(cyGraph.fa.reachableX(selectedState, transitions));
-	for(var i = 0; i < reachStates.length; i++)
-			getStateNode(reachStates[i]).style('background-color', 'purple');
-	getStateNode(selectedState).style('background-color', 'blue');
+		paintReachableNodes();
 }
 
 function op2Action(event) {
-	alert("OP2 " + event);
+	paintProductiveNodes();
 }
 
 function op3Action(event) {
-	alert("OP3 " + event);
+	paintUsefulNodes();
+}
+
+function op4Action(event){
+	console.log(cyGraph.fa.getAlphabet());
 }
 
 function fileSelectAction(event) {
@@ -439,4 +452,13 @@ function fileSelectAction(event) {
 	const reader = new FileReader();
 	reader.onload = function(event) { CyGraph.load(event.target.result); };
 	reader.readAsText(file);
+
+	states.value = cyGraph.fa.getStates().length;
+	accept_states.value = cyGraph.fa.getAcceptStates().length;
+	alph_size.value = cyGraph.fa.getAlphabet().length;
+	deterministic.value = cyGraph.fa.isDeterministic() ? "Yes" : "No";
+}
+
+function reset(event){
+	cyGraph.style();
 }

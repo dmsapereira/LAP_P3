@@ -44,7 +44,6 @@
 
 <BODY ONLOAD="onLoadAction(event)">
 
-
 <DIV ID="menu" STYLE="position: fixed; top: 0px; left: 0px; height: 100%; width: 200px; background: pink;">
 
 <hr><hr><h1 style="font-size: 26px;" >Automatamania</h1>
@@ -59,10 +58,10 @@
 </UL>
 
 <hr><hr><b> Commands:</b> <br />
+Input:<input type="text" id="input" value="" size="4">
 <DIV class="btn-group">
 <UL>
 	<li><BUTTON ID="op1" ONCLICK="op1Action(event)">Reachable</BUTTON>
-
 
 	<li><BUTTON ID="op2" ONCLICK="op2Action(event)">Productive</BUTTON>
 
@@ -76,29 +75,35 @@
 
 	<li><BUTTON ID="op7" ONCLICK="op7Action(event)">Animation</BUTTON>
 
-<li>...
-	<li>...
 	<li><INPUT ID="file-select" TYPE='file' ACCEPT='application/json' ONCHANGE='fileSelectAction(event)'>
 </UL>
 
 <hr><hr>
-
-<b>Statistics:</b> <br />
 <UL>
-<li>Number of states:<input type="text" id="states" value="" size="1" readonly>
-<p>
-<li>Number of accept states:<input type="text" id="accept_states" value="" size="1" readonly>
-<p>
-<li>Size of the alphabet:<input type="text" id="alph_size" value="" size="1" readonly>
-<p>
-<li>Is deterministic?🤔<input type="text" id="deterministic" value="" size="5" readonly>
-<p>
+	<li> <BUTTON ID="reset" ONCLICK="reset(event)">Reset</BUTTON>
 </UL>
 <hr><hr>
+<hr><hr>
 </DIV>
-<DIV id="cy" STYLE="position: fixed; top: 0px; left: 200px; background: lightcyan;"> </DIV>
+<DIV id="cy" STYLE="position: fixed; top: 0px; left: 200px; right: 200px; background: lightcyan;"> </DIV>
 
-
+<DIV ID="informations" STYLE="position: fixed; top: 0px; right: 0px; height: 100%; width: 200px; background: pink;">
+	<hr><hr><center><h1 style="font-size: 26px;">Informations</center></h1>
+	<hr><hr>
+	<b>Statistics:</b> <br />
+	<UL>
+	<li>Number of states:<input type="text" id="states" value="" size="1" readonly>
+	<p>
+	<li>Number of accept states:<input type="text" id="accept_states" value="" size="1" readonly>
+	<p>
+	<li>Size of the alphabet:<input type="text" id="alph_size" value="" size="1" readonly>
+	<p>
+	<li>Is deterministic?🤔<input type="text" id="deterministic" value="" size="5" readonly>
+	<p>
+	</UL>
+	<center><select name="list_box_name" id="generate_result" style = "background-color : white" size="number_of_options">
+		    <option disabled selected value> -- results for generate -- </option>
+	</select></center>
 </BODY>
 
 </HTML>

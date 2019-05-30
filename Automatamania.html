@@ -52,16 +52,16 @@
 <hr><hr><b>Authors:</b> <br />
 <UL>
 <!-- Put here your number and name! -->
-	<li>52890 David Pereira
+<li>52890 David Pereira
 
 <li>53675 Pedro Bailão
 </UL>
 
 <hr><hr><b> Commands:</b> <br />
-Input:<input type="text" id="input" value="" size="4">
+Input:<input type="text" id="input" value="" style= "text-align : center;" size="10">
 <DIV class="btn-group">
 <UL>
-	<li><BUTTON ID="op1" ONCLICK="op1Action(event)">Reachable</BUTTON>
+	<li><BUTTON ID="op1" style = "text-align : center;" ONCLICK="op1Action(event)">Reachable</BUTTON>
 
 	<li><BUTTON ID="op2" ONCLICK="op2Action(event)">Productive</BUTTON>
 
@@ -82,27 +82,26 @@ Input:<input type="text" id="input" value="" size="4">
 <UL>
 	<li> <BUTTON ID="reset" ONCLICK="reset(event)">Reset</BUTTON>
 </UL>
-<hr><hr>
-<hr><hr>
 </DIV>
 <DIV id="cy" STYLE="position: fixed; top: 0px; left: 200px; right: 200px; background: lightcyan;"> </DIV>
 
 <DIV ID="informations" STYLE="position: fixed; top: 0px; right: 0px; height: 100%; width: 200px; background: pink;">
 	<hr><hr><center><h1 style="font-size: 26px;">Informations</center></h1>
 	<hr><hr>
-	<b>Statistics:</b> <br />
+	<h1 style = "text-align : center;">Statistics</h1>
 	<UL>
-	<li>Number of states:<input type="text" id="states" value="" size="1" readonly>
+	<li>Number of states:<input type="text" id="states" value="" style = "text-align : center;" size="1" readonly>
 	<p>
-	<li>Number of accept states:<input type="text" id="accept_states" value="" size="1" readonly>
+	<li>Number of accept states:<input type="text" id="accept_states" value="" style = "text-align : center;" size="1" readonly>
 	<p>
-	<li>Size of the alphabet:<input type="text" id="alph_size" value="" size="1" readonly>
+	<li>Size of the alphabet:<input type="text" id="alph_size" value="" style = "text-align : center;" size="1" readonly>
 	<p>
-	<li>Is deterministic?🤔<input type="text" id="deterministic" value="" size="5" readonly>
-	<p>
-	<li>Word Accepted?<input type="text" id="accept_result" value = "" size="1" READONLY>
+	<li>Is deterministic?🤔<input type="text" id="deterministic" value="" style = "text-align : center;" size="5" readonly>
 	<p>
 	</UL>
+	<h1 style = "text-align : center;"> Accept </h1>
+		<p style = "text-align:center;">Word Accepted?<input type="text" id="accept_result" value = "" size="1" READONLY>
+	<h1 style = "text-align : center;">Generate</h1>
 	<center><select name="list_box_name" id="generate_result" style = "background-color : white" size="number_of_options">
 		    <option disabled selected value> -- results for generate -- </option>
 	</select></center>

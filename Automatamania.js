@@ -192,7 +192,7 @@ class FiniteAutomaton extends AbstractAutomaton {
 	}
 
 	isBlock(state){
-		return this.transitions.filter(trans => equals(trans[0], state)) == [];
+		return !this.transitions.some(trans => equals(trans[0], state));
 	}
 
 	getNextStates(state, symb){
@@ -348,7 +348,9 @@ class CyGraph {
 		this.cy = cytoscape(spec);
 		this.cy.$('#START').select();
 		this.cy.boxSelectionEnabled(false);
-//		this.cy.on('select', e => alert(e.target.id()));
+		this.cy.on('select',function(e){
+				e.target.unselect()	;
+		});
 		this.fa = fa;
 		this.refreshStatistics();
 	}
@@ -360,8 +362,6 @@ class CyGraph {
 		alph_size.value = this.fa.getAlphabet().length;
 		deterministic.value = this.fa.isDeterministic() ? "Yes" : "No";
 		this.stepStates = [];
-		input.readOnly = false;
-		input.value = "";
 	}
 
 	static build(fa) {
@@ -467,46 +467,67 @@ function printAlphabet(n){
 }
 
 function paintNextstates(){
-	var word = input.value;
-	if(cyGraph.stepStates.length == 0)
+	const word = input.value;
+	//if empty, means it's the first iteration
+	if(isEmpty(cyGraph.stepStates))
 		cyGraph.stepStates.push(cyGraph.fa.initialState);
 	cyGraph.stepStates.forEach(state => getStateNode(state).
 														style('background-color', null));
 	var valid = [];
 	const prod = cyGraph.fa.productive();
+	//for each of the previously colored nodes(states)
 	cyGraph.stepStates.forEach(function(state){
+		//next is the forks in this state's iteration
 		const next = cyGraph.fa.getNextStates(state, word.charAt(0));
-		if(next == []){
+		//if next is empty, means we've read a symbol that's not in the transitions
+		//therefore, this iteration ends
+		if(isEmpty(next)){
 			if(belongs(state, cyGraph.fa.acceptStates))
 				getStateNode(state).style('background-color', 'green');
 			else
-			getStateNode(state).style('background-color', 'red');
-		}else if(cyGraph.fa.isBlock(next)){
-			if(belongs(next, cyGraph.fa.acceptStates))
-				getStateNode(next).style('background-color', 'green');
-			else
-			getStateNode(next).style('background-color', 'red');
+				getStateNode(state).style('background-color', 'red');
 		}else{
-			valid.push(next);
-			getStateNode(next).style('background-color', 'blue');
+			//for each fork in the current state
+			next.forEach(function(nextState){
+				//if it's a state that has no outgoing transitions
+				if(cyGraph.fa.isBlock(nextState)){
+					if(belongs(nextState, cyGraph.fa.acceptStates))
+						getStateNode(nextState).style('background-color', 'green');
+					else
+						getStateNode(nextState).style('background-color', 'red');
+				}else{
+					valid.push(nextState);
+					getStateNode(nextState).style('background-color', 'blue');
+				}
+		});
 		}
 	});
 	input.value = input.value.slice(1);
-	if(input.value == [])
-		valid.forEach(function(state){
+	cyGraph.stepStates = [];
+	//if valid is empty, this means all the iterations have been prematurely
+	//concluded, therefore it's useless to read the rest of the word
+	if(isEmpty(valid)){
+		input.value = "";
+	}else if(isEmpty(input.value)){	//if all of the input has been read, then
+		valid.forEach(function(state){//the ongoing iterations must be dealt with
 			if(belongs(state, cyGraph.fa.acceptStates))
 				getStateNode(state).style('background-color', 'green');
 			else
 				getStateNode(state).style('background-color', 'red');
 		});
-		cyGraph.stepStates = [];
-	if(valid.length == 0){
-		cyGraph.stepStates = [];
-		input.readOnly = true;
-		input.value = "Finished. Press Reset";
+		valid = [];
 	}
-	else
-		valid.forEach(state => cyGraph.stepStates.push(state));
+	//just equaling them would lead to an undefined (apparently)
+	valid.forEach(state => cyGraph.stepStates.push(state));
+}
+
+function animate(){
+	var t = setInterval(function(){
+		if(isEmpty(input.value))
+			clearInterval(t);
+		else
+			paintNextstates();
+	}, 1000);
 }
 
 //HTML Functions
@@ -545,6 +566,10 @@ function op5Action(event){
 
 function op6Action(event){
 	paintNextstates();
+}
+
+function op7Action(event){
+	animate();
 }
 
 function fileSelectAction(event) {

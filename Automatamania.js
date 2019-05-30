@@ -348,7 +348,6 @@ class CyGraph {
 		this.cy = cytoscape(spec);
 		this.cy.$('#START').select();
 		this.cy.boxSelectionEnabled(false);
-		this.stepStates = [];
 //		this.cy.on('select', e => alert(e.target.id()));
 		this.fa = fa;
 		this.refreshStatistics();
@@ -360,6 +359,9 @@ class CyGraph {
 		accept_states.value = this.fa.acceptStates.length;
 		alph_size.value = this.fa.getAlphabet().length;
 		deterministic.value = this.fa.isDeterministic() ? "Yes" : "No";
+		this.stepStates = [];
+		input.readOnly = false;
+		input.value = "";
 	}
 
 	static build(fa) {
@@ -470,21 +472,25 @@ function paintNextstates(){
 		cyGraph.stepStates.push(cyGraph.fa.initialState);
 	cyGraph.stepStates.forEach(state => getStateNode(state).
 														style('background-color', null));
-	var states = flatMap(state => cyGraph.fa.getNextStates(state, word.charAt(0)),
-											cyGraph.stepStates);
 	var valid = [];
 	const prod = cyGraph.fa.productive();
-	states.forEach(function(state){
-		if(cyGraph.fa.isBlock(state)){
+	cyGraph.stepStates.forEach(function(state){
+		const next = cyGraph.fa.getNextStates(state, word.charAt(0));
+		if(next == []){
 			if(belongs(state, cyGraph.fa.acceptStates))
 				getStateNode(state).style('background-color', 'green');
 			else
-				getStateNode(state).style('background-color', 'red');
+			getStateNode(state).style('background-color', 'red');
+		}else if(cyGraph.fa.isBlock(next)){
+			if(belongs(next, cyGraph.fa.acceptStates))
+				getStateNode(next).style('background-color', 'green');
+			else
+			getStateNode(next).style('background-color', 'red');
 		}else{
-			valid.push(state);
-			getStateNode(state).style('background-color', 'blue');
+			valid.push(next);
+			getStateNode(next).style('background-color', 'blue');
 		}
-											});
+	});
 	input.value = input.value.slice(1);
 	if(input.value == [])
 		valid.forEach(function(state){
@@ -494,8 +500,11 @@ function paintNextstates(){
 				getStateNode(state).style('background-color', 'red');
 		});
 		cyGraph.stepStates = [];
-	if(valid.length == 0)
+	if(valid.length == 0){
 		cyGraph.stepStates = [];
+		input.readOnly = true;
+		input.value = "Finished. Press Reset";
+	}
 	else
 		valid.forEach(state => cyGraph.stepStates.push(state));
 }
@@ -553,4 +562,6 @@ function reset(event){
 	getStateNode(getSelectedState()).unselect();
 	states.forEach(state => getStateNode(state).style('background-color', null));
 	cyGraph.stepStates = [];
+	input.readOnly = false;
+	input.value = "";
 }

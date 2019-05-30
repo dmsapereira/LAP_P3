@@ -137,23 +137,21 @@ class FiniteAutomaton extends AbstractAutomaton {
 		for(var i = 0; i < this.transitions.length; i++)
 			result.push(this.transitions[i][1]);
 		return canonical(result);
-	}
+}
 
-	generateLanguage(n){
-		function generateAux(result, alphabet){
-			result.map(function(curr){
-				var combination = [];
-				for(var j = 0; j < alphabet.length; j++)
-					combination[j] = consLast(alphabet[j],curr);
-			});
+	generateX (n, s, ts, a){
+    if (n == 0){
+        if (belongs(s, a))
+						return [[]];
+				else
+						return [];
+    }else{
+        const x = this.gcut(s,ts)[0];
+        var asd = x.flatMap(([_,symb,next]) => (addAll(symb, this.generateX((n-1), next, ts, a))));
+				console.log(asd);
+				return asd;
 		}
-		const alphabet = this.getAlphabet();
-		var result = alphabet;
-		for(var i = 1; i < n; i++)
-			result = generateAux(result, alphabet);
-		return result;
 	}
-
 	gcut(s, ts) {
 		return [ts.filter(([z,_0,_1]) => z == s),
 				ts.filter(([z,_0,_1]) => z != s)];
@@ -210,6 +208,17 @@ class FiniteAutomaton extends AbstractAutomaton {
 
 	accept(w) {
 		return this.acceptX(this.initialState,w);
+	}
+
+	accept2X (s, w){
+    if(w == [])
+        return belongs(s, this.acceptStates);
+    else{
+			const x = w[0];
+			const xs = w.slice(1);
+      const l = transitionsFor(s,x);
+      return l.some(([_,_,s]) -> this.accept2X(s, xs), l);
+		}
 	}
 }
 
@@ -332,6 +341,7 @@ class CyGraph {
 	}
 
 	refreshStatistics(){
+		accept_result.value = "";
 		states.value = this.fa.getStates().length;
 		accept_states.value = this.fa.acceptStates.length;
 		alph_size.value = this.fa.getAlphabet().length;
@@ -431,6 +441,15 @@ function paintUsefulNodes(){
 	usefulNodes.forEach(state => getStateNode(state).style('background-color', 'green'));
 }
 
+function printAlphabet(n){
+	const automata = cyGraph.fa;
+	const alphabet = canonicalPrimitive(automata.generateX(n, automata.initialState,
+	 													automata.transitions, automata.acceptStates));
+	const listBox = generate_result.options;
+	var i = 0;
+	alphabet.forEach((a) => (listBox[i++] = new Option(a,a)));
+}
+
 //HTML Functions
 function onLoadAction(event) {
 	cyGraph = CyGraph.sampleGraph();
@@ -450,6 +469,17 @@ function op3Action(event) {
 }
 
 function op4Action(event){
+	if(input.value == undefined || input.value == null || input.value == "" ||
+			!(input.value === parseInt(input.value, 10)))
+		alert("Invalid input!");
+	else{
+		console.log(input.value);
+		printAlphabet(input.value);
+	}
+}
+
+function op5Action(event){
+	accept_result.value = cyGraph.fa.accept(input.value) ? "Yes" : "No";
 }
 
 function fileSelectAction(event) {
@@ -463,6 +493,7 @@ function fileSelectAction(event) {
 
 function reset(event){
 	const states = cyGraph.fa.getStates();
+	accept_result.value = "";
 	getStateNode(getSelectedState()).unselect();
 		states.forEach(state => getStateNode(state).style('background-color', null));
 }

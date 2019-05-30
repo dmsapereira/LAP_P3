@@ -192,7 +192,7 @@ class FiniteAutomaton extends AbstractAutomaton {
 	}
 
 	getNextStates(state, symb){
-		const trans = this.transitionsFor(state, symbol);
+		const trans = this.transitionsFor(state, symb);
 		return trans.flatMap(([_0,_1, next]) => next);
 	}
 
@@ -460,10 +460,12 @@ function printAlphabet(n){
 }
 
 function paintNextstates(){
-	var nodes = cyGraph.cy.filter(node => (node.style("background-color") == "rgb(0,0,255)"));
-	if(nodes == [])
-		nodes.push(getStateNode(cyGraph.fa.initialState));
-	nodes = nodes.map(node => cyGraph.fa.getNextStates(node, input.value[0]));
+	getStateNode("START").style('background-color', 'blue');
+	var nodes = cyGraph.cy.nodes().filter(node => (node.style('background-color') == "rgb(0,0,255)"));
+	if(nodes.length == 0)
+		nodes.add(getStateNode(cyGraph.fa.initialState));
+	nodes = nodes.map(node => getStateNode(cyGraph.fa.getNextStates(node.data('name'), String(input.value).charAt(0))));
+	//nodes = nextStates.map()
 	input.value = input.value.slice(1);
 	if(input.value == []){
 		nodes.forEach(node => node.style("background-color", "red"));

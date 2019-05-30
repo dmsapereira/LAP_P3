@@ -191,6 +191,10 @@ class FiniteAutomaton extends AbstractAutomaton {
 									s == s1 && symb == symb1);
 	}
 
+	isBlock(state){
+		return this.transitions.filter(trans => equals(trans[0], state)) == [];
+	}
+
 	getNextStates(state, symb){
 		const trans = this.transitionsFor(state, symb);
 		return trans.flatMap(([_0,_1, next]) => next);
@@ -344,6 +348,7 @@ class CyGraph {
 		this.cy = cytoscape(spec);
 		this.cy.$('#START').select();
 		this.cy.boxSelectionEnabled(false);
+		this.stepStates = [];
 //		this.cy.on('select', e => alert(e.target.id()));
 		this.fa = fa;
 		this.refreshStatistics();
@@ -460,19 +465,39 @@ function printAlphabet(n){
 }
 
 function paintNextstates(){
-	getStateNode("START").style('background-color', 'blue');
-	var nodes = cyGraph.cy.nodes().filter(node => (node.style('background-color') == "rgb(0,0,255)"));
-	if(nodes.length == 0)
-		nodes.add(getStateNode(cyGraph.fa.initialState));
-	nodes = nodes.map(node => getStateNode(cyGraph.fa.getNextStates(node.data('name'), String(input.value).charAt(0))));
-	//nodes = nextStates.map()
+	var word = input.value;
+	if(cyGraph.stepStates.length == 0)
+		cyGraph.stepStates.push(cyGraph.fa.initialState);
+	cyGraph.stepStates.forEach(state => getStateNode(state).
+														style('background-color', null));
+	var states = flatMap(state => cyGraph.fa.getNextStates(state, word.charAt(0)),
+											cyGraph.stepStates);
+	var valid = [];
+	const prod = cyGraph.fa.productive();
+	states.forEach(function(state){
+		if(cyGraph.fa.isBlock(state)){
+			if(belongs(state, cyGraph.fa.acceptStates))
+				getStateNode(state).style('background-color', 'green');
+			else
+				getStateNode(state).style('background-color', 'red');
+		}else{
+			valid.push(state);
+			getStateNode(state).style('background-color', 'blue');
+		}
+											});
 	input.value = input.value.slice(1);
-	if(input.value == []){
-		nodes.forEach(node => node.style("background-color", "red"));
-		nodes = nodes.filter(node => belongs(node.data('name'), cyGraph.fa.acceptStates));
-		nodes.forEach(node => node.style("background-color", "green"));
-	}else
-		nodes = nodes.forEach(node => node.style('background-color', 'blue'));
+	if(input.value == [])
+		valid.forEach(function(state){
+			if(belongs(state, cyGraph.fa.acceptStates))
+				getStateNode(state).style('background-color', 'green');
+			else
+				getStateNode(state).style('background-color', 'red');
+		});
+		cyGraph.stepStates = [];
+	if(valid.length == 0)
+		cyGraph.stepStates = [];
+	else
+		valid.forEach(state => cyGraph.stepStates.push(state));
 }
 
 //HTML Functions
@@ -526,5 +551,6 @@ function reset(event){
 	const states = cyGraph.fa.getStates();
 	accept_result.value = "";
 	getStateNode(getSelectedState()).unselect();
-		states.forEach(state => getStateNode(state).style('background-color', null));
+	states.forEach(state => getStateNode(state).style('background-color', null));
+	cyGraph.stepStates = [];
 }

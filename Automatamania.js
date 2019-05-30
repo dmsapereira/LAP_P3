@@ -348,9 +348,12 @@ class CyGraph {
 		this.cy = cytoscape(spec);
 		this.cy.$('#START').select();
 		this.cy.boxSelectionEnabled(false);
-		this.cy.on('select',function(e){
-				e.target.unselect()	;
-		});
+		this.cy.edges().unselectify();
+		this.cy.on('select', e=>
+			this.cy.nodes().forEach(function(node){
+				if(!equals(node.data('name'), e.target.data('name')))
+						node.unselect();
+			}));
 		this.fa = fa;
 		this.refreshStatistics();
 	}

@@ -191,6 +191,11 @@ class FiniteAutomaton extends AbstractAutomaton {
 									s == s1 && symb == symb1);
 	}
 
+	getNextStates(state, symb){
+		const trans = this.transitionsFor(state, symbol);
+		return trans.flatMap(([_0,_1, next]) => next);
+	}
+
 	acceptX(s, w) {
 		if( isEmpty(w) )
 			return this.acceptStates.includes(s);
@@ -216,9 +221,13 @@ class FiniteAutomaton extends AbstractAutomaton {
     else{
 			const x = w[0];
 			const xs = w.slice(1);
-      const l = transitionsFor(s,x);
-      return l.some(([_,_,s]) -> this.accept2X(s, xs), l);
+      const l = this.transitionsFor(s,x);
+      return l.some(([_0,_1,next]) => this.accept2X(next, xs), l);
 		}
+	}
+
+	accept2(w){
+		return this.accept2X(this.initialState, w);
 	}
 }
 
@@ -450,6 +459,20 @@ function printAlphabet(n){
 	alphabet.forEach((a) => (listBox[i++] = new Option(a,a)));
 }
 
+function paintNextstates(){
+	var nodes = cyGraph.cy.filter(node => (node.style("background-color") == "rgb(0,0,255)"));
+	if(nodes == [])
+		nodes.push(getStateNode(cyGraph.fa.initialState));
+	nodes = nodes.map(node => cyGraph.fa.getNextStates(node, input.value[0]));
+	input.value = input.value.slice(1);
+	if(input.value == []){
+		nodes.forEach(node => node.style("background-color", "red"));
+		nodes = nodes.filter(node => belongs(node.data('name'), cyGraph.fa.acceptStates));
+		nodes.forEach(node => node.style("background-color", "green"));
+	}else
+		nodes = nodes.forEach(node => node.style('background-color', 'blue'));
+}
+
 //HTML Functions
 function onLoadAction(event) {
 	cyGraph = CyGraph.sampleGraph();
@@ -469,8 +492,7 @@ function op3Action(event) {
 }
 
 function op4Action(event){
-	if(input.value == undefined || input.value == null || input.value == "" ||
-			!(input.value === parseInt(input.value, 10)))
+	if(input.value == undefined || input.value == null || input.value == "")
 		alert("Invalid input!");
 	else{
 		console.log(input.value);
@@ -479,7 +501,14 @@ function op4Action(event){
 }
 
 function op5Action(event){
-	accept_result.value = cyGraph.fa.accept(input.value) ? "Yes" : "No";
+	if(deterministic.value == "Yes")
+		accept_result.value = cyGraph.fa.accept(input.value) ? "Yes" : "No";
+	else
+		accept_result.value = cyGraph.fa.accept2(input.value) ? "Yes" : "No";
+}
+
+function op6Action(event){
+	paintNextstates();
 }
 
 function fileSelectAction(event) {

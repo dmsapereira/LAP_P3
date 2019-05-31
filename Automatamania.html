@@ -44,7 +44,7 @@
 
 <BODY ONLOAD="onLoadAction(event)">
 
-<DIV ID="menu" STYLE="position: fixed; top: 0px; left: 0px; height: 100%; width: 200px; background: pink;">
+<DIV ID="menu" STYLE="position: fixed; top: 0px; left: 0px; height: 100%; width: 200px; background: url(https://i.pinimg.com/originals/84/a5/f1/84a5f1a03629dcc48efa7115b53f3bd6.jpg);">
 
 <hr><hr><h1 style="font-size: 26px;" >Automatamania</h1>
 
@@ -75,7 +75,7 @@ Input:<input type="text" id="input" value="" style= "text-align : center;" size=
 
 	<li><BUTTON ID="op7" ONCLICK="op7Action(event)">Animation</BUTTON>
 
-	<li><INPUT ID="file-select" TYPE='file' ACCEPT='application/json' ONCHANGE='fileSelectAction(event)'>
+	<li><INPUT ID="file-select" TYPE='file' ACCEPT='application/json' " ONCHANGE='fileSelectAction(event)'>
 </UL>
 
 <hr><hr>
@@ -83,28 +83,30 @@ Input:<input type="text" id="input" value="" style= "text-align : center;" size=
 	<li> <BUTTON ID="reset" ONCLICK="reset(event)">Reset</BUTTON>
 </UL>
 </DIV>
-<DIV id="cy" STYLE="position: fixed; top: 0px; left: 200px; right: 200px; background: lightcyan;"> </DIV>
+<DIV id="cy" STYLE="position: fixed; top: 0px; left: 200px; right: 200px; background:#ededed; background-size: cover; background-repeat: no-repeat"> </DIV>
 
-<DIV ID="informations" STYLE="position: fixed; top: 0px; right: 0px; height: 100%; width: 200px; background: pink;">
+<DIV ID="informations" STYLE="position: fixed; top: 0px; right: 0px; height: 100%; width: 200px; background-image: url(https://i.pinimg.com/originals/84/a5/f1/84a5f1a03629dcc48efa7115b53f3bd6.jpg);">
 	<hr><hr><center><h1 style="font-size: 26px;">Informations</center></h1>
 	<hr><hr>
 	<h1 style = "text-align : center;">Statistics</h1>
 	<UL>
 	<li>Number of states:<input type="text" id="states" value="" style = "text-align : center;" size="1" readonly>
 	<p>
+	<li>Number of transitions:<input type="text" id="trans" value="" style = "text-align : center;" size="1" readonly>
+	<p>
 	<li>Number of accept states:<input type="text" id="accept_states" value="" style = "text-align : center;" size="1" readonly>
 	<p>
 	<li>Size of the alphabet:<input type="text" id="alph_size" value="" style = "text-align : center;" size="1" readonly>
 	<p>
-	<li>Is deterministic?🤔<input type="text" id="deterministic" value="" style = "text-align : center;" size="5" readonly>
+	<li>Minimum word size:<input type="text" id="min_word" value="" style = "text-align : center;" size="1" readonly>
+	<p>
+	<li>Is deterministic?<input type="text" id="deterministic" value="" style = "text-align : center;" size="5" readonly>
 	<p>
 	</UL>
 	<h1 style = "text-align : center;"> Accept </h1>
 		<p style = "text-align:center;">Word Accepted?<input type="text" id="accept_result" value = "" size="1" READONLY>
 	<h1 style = "text-align : center;">Generate</h1>
-	<center><select name="list_box_name" id="generate_result" style = "background-color : white" size="number_of_options">
-		    <option disabled selected value> -- results for generate -- </option>
-	</select></center>
+	<center><select name="list_box_name" id="generate_result" style = "background-color : white" size="number_of_options"></select></center>
 </BODY>
 
 </HTML>

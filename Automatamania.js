@@ -133,23 +133,18 @@ class FiniteAutomaton extends AbstractAutomaton {
 	}
 
 	getAlphabet(){
-		var result = [];
-		for(var i = 0; i < this.transitions.length; i++)
-			result.push(this.transitions[i][1]);
-		return canonical(result);
+		return canonicalPrimitive(flatMap((([_s1, symb, _s2]) => symb), this.transitions));
 }
 
-	generateX (n, s, ts, a){
+	generateX (n, s){
     if (n == 0){
-        if (belongs(s, a))
+        if (belongs(s, this.acceptStates))
 						return [[]];
 				else
 						return [];
     }else{
-        const x = this.gcut(s,ts)[0];
-        var asd = x.flatMap(([_,symb,next]) => (addAll(symb, this.generateX((n-1), next, ts, a))));
-				console.log(asd);
-				return asd;
+        const x = this.gcut(s,this.transitions)[0];
+        return flatMap(([_,symb,next]) => (addAll(symb, this.generateX(n-1, next))), x).sort();
 		}
 	}
 	gcut(s, ts) {
@@ -157,16 +152,17 @@ class FiniteAutomaton extends AbstractAutomaton {
 				ts.filter(([z,_0,_1]) => z != s)];
 	}
 
+	minWordSize(){
+		var i = 0;
+		while(isEmpty(this.generateX(i, this.initialState)))
+			i++;
+		return i;
+	}
+
 	isDeterministic(){
 		const states = this.getStates();
-		var t, symb;
-		for(var state of states){
-			t = this.transitions.filter(([x,_0,_1]) => x == state)
-			symb = t.map(([_0,y,_1]) => y);
-			if(canonical(symb).length != t.length)
-				return false;
-		}
-		return true;
+		const l = this.transitions.map(([s1,symb,_0]) => [s1, symb]);
+		return l.length == canonical(l).length;
 	}
 
 	reachableX(s, ts) {
@@ -197,7 +193,7 @@ class FiniteAutomaton extends AbstractAutomaton {
 
 	getNextStates(state, symb){
 		const trans = this.transitionsFor(state, symb);
-		return trans.flatMap(([_0,_1, next]) => next);
+		return trans.map(([_0,_1, next]) => next);
 	}
 
 	acceptX(s, w) {
@@ -361,10 +357,15 @@ class CyGraph {
 	refreshStatistics(){
 		accept_result.value = "";
 		states.value = this.fa.getStates().length;
+		trans.value = this.fa.transitions.length;
 		accept_states.value = this.fa.acceptStates.length;
 		alph_size.value = this.fa.getAlphabet().length;
+		min_word.value = this.fa.minWordSize();
 		deterministic.value = this.fa.isDeterministic() ? "Yes" : "No";
 		this.stepStates = [];
+		for(var i=0; i < generate_result.length ; i++){
+			generate_result.remove(i);
+		}
 	}
 
 	static build(fa) {
@@ -462,8 +463,8 @@ function paintUsefulNodes(){
 
 function printAlphabet(n){
 	const automata = cyGraph.fa;
-	const alphabet = canonicalPrimitive(automata.generateX(n, automata.initialState,
-	 													automata.transitions, automata.acceptStates));
+	const alphabet = canonicalPrimitive(automata.generateX(n,
+																			automata.initialState));
 	const listBox = generate_result.options;
 	var i = 0;
 	alphabet.forEach((a) => (listBox[i++] = new Option(a,a)));
@@ -525,9 +526,12 @@ function paintNextstates(){
 }
 
 function animate(){
+	input.readOnly= true;
 	var t = setInterval(function(){
-		if(isEmpty(input.value))
+		if(isEmpty(input.value)){
 			clearInterval(t);
+			input.readOnly = false;
+		}
 		else
 			paintNextstates();
 	}, 1000);
@@ -552,7 +556,8 @@ function op3Action(event) {
 }
 
 function op4Action(event){
-	if(input.value == undefined || input.value == null || input.value == "")
+	if(input.value == undefined || input.value == null || input.value == "" ||
+			isNaN(input.value))
 		alert("Invalid input!");
 	else{
 		console.log(input.value);
@@ -561,10 +566,14 @@ function op4Action(event){
 }
 
 function op5Action(event){
-	if(deterministic.value == "Yes")
-		accept_result.value = cyGraph.fa.accept(input.value) ? "Yes" : "No";
-	else
-		accept_result.value = cyGraph.fa.accept2(input.value) ? "Yes" : "No";
+	if(input.value.length < min_word.value)
+		alert("Word too small! Check the informations.");
+	else{
+		if(deterministic.value == "Yes")
+			accept_result.value = cyGraph.fa.accept(input.value) ? "Yes" : "No";
+		else
+			accept_result.value = cyGraph.fa.accept2(input.value) ? "Yes" : "No";
+	}
 }
 
 function op6Action(event){
@@ -590,6 +599,9 @@ function reset(event){
 	getStateNode(getSelectedState()).unselect();
 	states.forEach(state => getStateNode(state).style('background-color', null));
 	cyGraph.stepStates = [];
-	input.readOnly = false;
+	const elements = generate_result;
+	for(var i = generate_result.length - 1; i >= 0; i--){
+		generate_result.remove(i);
+	}
 	input.value = "";
 }

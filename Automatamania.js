@@ -2,17 +2,10 @@
  * Automatamania
  *
 
-Aluno 1: ?number ?name <-- mandatory to fill
-Aluno 2: ?number ?name <-- mandatory to fill
+Aluno 1: 52890 - David Pereira
+Aluno 2: 53675 - Pedro Bailao
 
 Comment:
-
-?????????????????????????
-?????????????????????????
-?????????????????????????
-?????????????????????????
-?????????????????????????
-?????????????????????????
 
 01234567890123456789012345678901234567890123456789012345678901234567890123456789
 
@@ -133,7 +126,8 @@ class FiniteAutomaton extends AbstractAutomaton {
 	}
 
 	getAlphabet(){
-		return canonicalPrimitive(flatMap((([_s1, symb, _s2]) => symb), this.transitions));
+		return canonicalPrimitive(flatMap((([_s1, symb, _s2]) => symb),
+															this.transitions)).sort();
 }
 
 	generateX (n, s){
@@ -144,9 +138,15 @@ class FiniteAutomaton extends AbstractAutomaton {
 						return [];
     }else{
         const x = this.gcut(s,this.transitions)[0];
-        return flatMap(([_,symb,next]) => (addAll(symb, this.generateX(n-1, next))), x).sort();
+        return flatMap(([_,symb,next]) => (addAll(symb,
+												this.generateX(n-1, next))), x);
 		}
 	}
+
+	generate(n){
+		return this.generateX(n, this.initialState).sort();
+	}
+
 	gcut(s, ts) {
 		return [ts.filter(([z,_0,_1]) => z == s),
 				ts.filter(([z,_0,_1]) => z != s)];
@@ -154,7 +154,7 @@ class FiniteAutomaton extends AbstractAutomaton {
 
 	minWordSize(){
 		var i = 0;
-		while(isEmpty(this.generateX(i, this.initialState)))
+		while(isEmpty(this.generate(i)))
 			i++;
 		return i;
 	}
@@ -187,6 +187,7 @@ class FiniteAutomaton extends AbstractAutomaton {
 									s == s1 && symb == symb1);
 	}
 
+	//checks if a state has no outgoing transitions, making it a useless state
 	isBlock(state){
 		return !this.transitions.some(trans => equals(trans[0], state));
 	}
@@ -216,7 +217,7 @@ class FiniteAutomaton extends AbstractAutomaton {
 	}
 
 	accept2X (s, w){
-    if(w == [])
+    if(isEmpty(w))
         return belongs(s, this.acceptStates);
     else{
 			const x = w[0];
@@ -246,7 +247,7 @@ const abc = new FiniteAutomaton({
 });
 
 function testAll() {
-//	getAlphabet
+	console.log(abc.getAlphabet());
 	console.log("");
 	console.log(abc.getStates());
 	console.log("");
@@ -259,8 +260,8 @@ function testAll() {
 	console.log(abc.accept(['a','b','c']));
 	console.log("");
 	console.log(abc.accept(['a','b']));
-//	generate
-//	accept2
+	console.log(abc.generate(3, abc.initialState));
+	console.log(abc.accept2(['a','b','c']));
 }
 
 //Â testAll();
@@ -343,10 +344,11 @@ class CyGraph {
 		spec.container = document.getElementById('cy');  // the graph is placed in the DIV 'cy'
 		this.cy = cytoscape(spec);
 		this.cy.$('#START').select();
-		this.cy.boxSelectionEnabled(false);
-		this.cy.edges().unselectify();
+		this.cy.boxSelectionEnabled(false);//no more ctrl drag selection
+		this.cy.edges().unselectify();//no more selecting edges
 		this.cy.on('select', e=>
 			this.cy.nodes().forEach(function(node){
+				//no more ctrl clicking for multi selection
 				if(!equals(node.data('name'), e.target.data('name')))
 						node.unselect();
 			}));
@@ -362,10 +364,10 @@ class CyGraph {
 		alph_size.value = this.fa.getAlphabet().length;
 		min_word.value = this.fa.minWordSize();
 		deterministic.value = this.fa.isDeterministic() ? "Yes" : "No";
+		//not a statistic, but resets the tracker for the painted states
 		this.stepStates = [];
-		for(var i=0; i < generate_result.length ; i++){
+		for(var i = generate_result.length - 1; i >= 0; i--)
 			generate_result.remove(i);
-		}
 	}
 
 	static build(fa) {
@@ -374,7 +376,8 @@ class CyGraph {
     }
 
     function buildEdges(transition){
-      return { data: { source: transition[0], symbol: transition[1], target: transition[2] } }
+      return { data: { source: transition[0], symbol: transition[1],
+							target: transition[2] } }
     }
 		const nodes = fa.getStates().map(buildStates);
 		const edges = fa.transitions.map(buildEdges);
@@ -439,7 +442,12 @@ function getSelectedState(){
 	return cyGraph.cy.$(':selected').data('name');
 }
 
+function unpaintNodes(){
+	cyGraph.cy.nodes().forEach(node => node.style('background-color', null));
+}
+
 function paintReachableNodes(){
+	unpaintNodes();
 	const transitions = cyGraph.fa.transitions;
 	if(getSelectedState() == undefined)
 				getStateNode(cyGraph.fa.initialState).select();
@@ -451,20 +459,22 @@ function paintReachableNodes(){
 }
 
 function paintProductiveNodes(){
+	unpaintNodes();
 	const productiveStates = cyGraph.fa.productive();
 	productiveStates.forEach(state =>
 			getStateNode(state).style('background-color', 'yellow'));
 }
 
 function paintUsefulNodes(){
+	unpaintNodes();
 	const usefulNodes = cyGraph.fa.reachable();
-	usefulNodes.forEach(state => getStateNode(state).style('background-color', 'green'));
+	usefulNodes.forEach(state => getStateNode(state).style('background-color',
+																													'green'));
 }
 
 function printAlphabet(n){
 	const automata = cyGraph.fa;
-	const alphabet = canonicalPrimitive(automata.generateX(n,
-																			automata.initialState));
+	const alphabet = automata.generate(n);
 	const listBox = generate_result.options;
 	var i = 0;
 	alphabet.forEach((a) => (listBox[i++] = new Option(a,a)));
@@ -484,7 +494,7 @@ function paintNextstates(){
 		//next is the forks in this state's iteration
 		const next = cyGraph.fa.getNextStates(state, word.charAt(0));
 		//if next is empty, means we've read a symbol that's not in the transitions
-		//therefore, this iteration ends
+		//for the painted state, therefore, this iteration ends. It
 		if(isEmpty(next)){
 			if(belongs(state, cyGraph.fa.acceptStates))
 				getStateNode(state).style('background-color', 'green');
@@ -493,12 +503,14 @@ function paintNextstates(){
 		}else{
 			//for each fork in the current state
 			next.forEach(function(nextState){
-				//if it's a state that has no outgoing transitions
+				//if this fork has no outgoing transitions, it's over
 				if(cyGraph.fa.isBlock(nextState)){
 					if(belongs(nextState, cyGraph.fa.acceptStates))
 						getStateNode(nextState).style('background-color', 'green');
 					else
 						getStateNode(nextState).style('background-color', 'red');
+				//if it's a 'normal' state, then we add it to the valid array for
+				//further processing
 				}else{
 					valid.push(nextState);
 					getStateNode(nextState).style('background-color', 'blue');
@@ -521,11 +533,12 @@ function paintNextstates(){
 		});
 		valid = [];
 	}
-	//just equaling them would lead to an undefined (apparently)
+	//just equaling them would lead to an 'undefined'
 	valid.forEach(state => cyGraph.stepStates.push(state));
 }
 
 function animate(){
+	//make the input readOnly to avoid some pesky user's meddling
 	input.readOnly= true;
 	var t = setInterval(function(){
 		if(isEmpty(input.value)){
@@ -567,7 +580,7 @@ function op4Action(event){
 
 function op5Action(event){
 	if(input.value.length < min_word.value)
-		alert("Word too small! Check the informations.");
+		alert("Word too small to be accepted! Check the informations.");
 	else{
 		if(deterministic.value == "Yes")
 			accept_result.value = cyGraph.fa.accept(input.value) ? "Yes" : "No";
@@ -589,7 +602,9 @@ function fileSelectAction(event) {
 	if( file == undefined ) // if canceled
 		return;
 	const reader = new FileReader();
-	reader.onload = function(event) { cyGraph = CyGraph.load(event.target.result); };
+	reader.onload = function(event) {
+		cyGraph = CyGraph.load(event.target.result);
+	};
 	reader.readAsText(file);
 }
 
@@ -600,8 +615,8 @@ function reset(event){
 	states.forEach(state => getStateNode(state).style('background-color', null));
 	cyGraph.stepStates = [];
 	const elements = generate_result;
-	for(var i = generate_result.length - 1; i >= 0; i--){
+	//must be iterated in reverse because ?? (didn't work the other way around)
+	for(var i = generate_result.length - 1; i >= 0; i--)
 		generate_result.remove(i);
-	}
 	input.value = "";
 }

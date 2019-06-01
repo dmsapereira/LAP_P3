@@ -13,6 +13,8 @@ INSIDE THIS FILE, YOU CAN CHANGE EVERYTHING YOU WANT!
 /*
 We included an extra right side bar, because most of the project was done in
 a 1366x768 screen, which made the left bar way too small for all the items
+
+All the functions have been implemented
 /*
 DOCUMENTATION
 
@@ -187,7 +189,6 @@ class FiniteAutomaton extends AbstractAutomaton {
 	}
 
 	isDeterministic(){
-		const states = this.getStates();
 		const l = this.transitions.map(([s1,symb,_0]) => [s1, symb]);
 		return l.length == canonical(l).length;
 	}

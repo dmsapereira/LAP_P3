@@ -10,6 +10,8 @@
 	<META name="viewport"
  content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
 
+<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+
 <SCRIPT src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></SCRIPT>
 
 <SCRIPT src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.js"></SCRIPT>
@@ -19,7 +21,7 @@
 	<SCRIPT type="text/javascript" src="Automatamania.js"></SCRIPT>
 	<STYLE>
 
-	html, body { font-family: helvetica neue, helvetica, liberation sans, arial, sans-serif; font-size: 14px; height: 100%; width: 100%; padding: 0; margin: 0;}
+	html, body {font-family: 'Roboto', sans-serif; font-size: 14px; height: 100%; width: 100%; padding: 0; margin: 0;}
 
 	#cy { position: absolute; left: 0; top: 0; bottom: 0; right: 0; z-index: 999; }
 		h1 { opacity: 1; font-size: 1em; font-weight: bold; }
@@ -50,7 +52,7 @@
 
 
 <hr><hr><b>Authors:</b> <br />
-<UL>
+<UL style = "font-size: 16px;">
 <!-- Put here your number and name! -->
 <li>52890 David Pereira
 
@@ -58,7 +60,9 @@
 </UL>
 
 <hr><hr><b> Commands:</b> <br />
-Input:<input type="text" id="input" value="" style= "text-align : center;" size="10">
+<p>
+&emsp;Input:<input type="text" id="input" value="" style= "text-align : center;" size="10">
+<p>
 <DIV class="btn-group">
 <UL>
 	<li><BUTTON ID="op1" style = "text-align : center;" ONCLICK="op1Action(event)">Reachable</BUTTON>
@@ -98,7 +102,7 @@ Input:<input type="text" id="input" value="" style= "text-align : center;" size=
 	<p>
 	<li>Size of the alphabet:<input type="text" id="alph_size" value="" style = "text-align : center;" size="1" readonly>
 	<p>
-	<li>Minimum accepted word size:<input type="text" id="min_word" value="" style = "text-align : center;" size="1" readonly>
+	<li>Minimum word size:<input type="text" id="min_word" value="" style = "text-align : center;" size="1" readonly>
 	<p>
 	<li>Is deterministic?<input type="text" id="deterministic" value="" style = "text-align : center;" size="5" readonly>
 	<p>

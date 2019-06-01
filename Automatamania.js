@@ -101,6 +101,32 @@ function clone(obj) {
 	return Object.assign({}, obj);
 }
 
+function clearListBox(){
+	//must be iterated in reverse because ?? (didn't work the other way around)
+	for(var i = generate_result.length - 1; i >= 0; i--)
+		generate_result.remove(i);
+}
+
+function disableButtons(){
+	op1.disabled = true;
+	op2.disabled = true;
+	op3.disabled = true;
+	op4.disabled = true;
+	op5.disabled = true;
+	op6.disabled = true;
+	op7.disabled = true;
+}
+
+function enableButtons(){
+	op1.disabled = false;
+	op2.disabled = false;
+	op3.disabled = false;
+	op4.disabled = false;
+	op5.disabled = false;
+	op6.disabled = false;
+	op7.disabled = false;
+}
+
 
 /* FINITE AUTOMATA ---------------------------------------------------------- */
 
@@ -366,8 +392,10 @@ class CyGraph {
 		deterministic.value = this.fa.isDeterministic() ? "Yes" : "No";
 		//not a statistic, but resets the tracker for the painted states
 		this.stepStates = [];
-		for(var i = generate_result.length - 1; i >= 0; i--)
-			generate_result.remove(i);
+		input.value = "";
+		clearListBox();
+		//enables buttons just in case a file was loaded during an animation
+		enableButtons();
 	}
 
 	static build(fa) {
@@ -473,6 +501,7 @@ function paintUsefulNodes(){
 }
 
 function printAlphabet(n){
+	clearListBox();
 	const automata = cyGraph.fa;
 	const alphabet = automata.generate(n);
 	const listBox = generate_result.options;
@@ -494,28 +523,15 @@ function paintNextstates(){
 		//next is the forks in this state's iteration
 		const next = cyGraph.fa.getNextStates(state, word.charAt(0));
 		//if next is empty, means we've read a symbol that's not in the transitions
-		//for the painted state, therefore, this iteration ends. It
-		if(isEmpty(next)){
-			if(belongs(state, cyGraph.fa.acceptStates))
-				getStateNode(state).style('background-color', 'green');
-			else
+		//or it has no outgoing transitions.
+		if(isEmpty(next))
 				getStateNode(state).style('background-color', 'red');
-		}else{
+		else{
 			//for each fork in the current state
 			next.forEach(function(nextState){
-				//if this fork has no outgoing transitions, it's over
-				if(cyGraph.fa.isBlock(nextState)){
-					if(belongs(nextState, cyGraph.fa.acceptStates))
-						getStateNode(nextState).style('background-color', 'green');
-					else
-						getStateNode(nextState).style('background-color', 'red');
-				//if it's a 'normal' state, then we add it to the valid array for
-				//further processing
-				}else{
 					valid.push(nextState);
 					getStateNode(nextState).style('background-color', 'blue');
-				}
-		});
+			});
 		}
 	});
 	input.value = input.value.slice(1);
@@ -538,12 +554,17 @@ function paintNextstates(){
 }
 
 function animate(){
+	unpaintNodes();
+	//disables buttons to avoid weird behaviour during the animation.
+	//reset is still available though
+	disableButtons();
 	//make the input readOnly to avoid some pesky user's meddling
 	input.readOnly= true;
 	var t = setInterval(function(){
 		if(isEmpty(input.value)){
 			clearInterval(t);
 			input.readOnly = false;
+			enableButtons();
 		}
 		else
 			paintNextstates();
@@ -572,10 +593,8 @@ function op4Action(event){
 	if(input.value == undefined || input.value == null || input.value == "" ||
 			isNaN(input.value))
 		alert("Invalid input!");
-	else{
-		console.log(input.value);
+	else
 		printAlphabet(input.value);
-	}
 }
 
 function op5Action(event){
@@ -609,14 +628,15 @@ function fileSelectAction(event) {
 }
 
 function reset(event){
+	//we could just call fa.refreshStatistics() but that would calculate the
+	//statistics again
 	const states = cyGraph.fa.getStates();
 	accept_result.value = "";
 	getStateNode(getSelectedState()).unselect();
 	states.forEach(state => getStateNode(state).style('background-color', null));
 	cyGraph.stepStates = [];
-	const elements = generate_result;
-	//must be iterated in reverse because ?? (didn't work the other way around)
-	for(var i = generate_result.length - 1; i >= 0; i--)
-		generate_result.remove(i);
 	input.value = "";
+	clearListBox();
+	//enables buttons just in case reset is pressed mid animation
+	enableButtons();
 }

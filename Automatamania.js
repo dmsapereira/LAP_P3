@@ -11,7 +11,8 @@ Comment:
 
 INSIDE THIS FILE, YOU CAN CHANGE EVERYTHING YOU WANT!
 /*
-
+We included an extra right side bar, because most of the project was done in
+a 1366x768 screen, which made the left bar way too small for all the items
 /*
 DOCUMENTATION
 
@@ -639,4 +640,24 @@ function reset(event){
 	clearListBox();
 	//enables buttons just in case reset is pressed mid animation
 	enableButtons();
+}
+
+//fun little feature to make the html easier on the eyes 
+function darkMode(event){
+	if (dark_mode.checked){
+		cyGraph.cy.nodes().style('color', 'white');
+		cyGraph.cy.edges().style('color', 'white');
+		document.body.style.color = "white";
+		cy.style.background="#262626";
+		menu.style.background = "url(https://www.wildtextures.com/wp-content/uploads/wildtextures-leather-Campo-black-e1497952801221-480x498.jpg)";
+		informations.style.background = "url(https://www.wildtextures.com/wp-content/uploads/wildtextures-leather-Campo-black-e1497952801221-480x498.jpg)";
+	}else{
+		cyGraph.cy.nodes().style('color', 'black');
+		cyGraph.cy.edges().style('color', 'black');
+		document.body.style.color = "black";
+		cy.style.background="#ededed";
+		menu.style.background = "url(https://i.pinimg.com/originals/84/a5/f1/84a5f1a03629dcc48efa7115b53f3bd6.jpg)";
+		informations.style.background = "url(https://i.pinimg.com/originals/84/a5/f1/84a5f1a03629dcc48efa7115b53f3bd6.jpg)";
+	}
+
 }

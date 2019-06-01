@@ -397,6 +397,11 @@ class CyGraph {
 		clearListBox();
 		//enables buttons just in case a file was loaded during an animation
 		enableButtons();
+		//call this again so the Cytoscape colors don't reset, making it unreadable
+		if(dark_mode.checked){
+			this.cy.nodes().style('color', 'white');
+			this.cy.edges().style('color', 'white');
+		}
 	}
 
 	static build(fa) {
@@ -642,8 +647,8 @@ function reset(event){
 	enableButtons();
 }
 
-//fun little feature to make the html easier on the eyes 
-function darkMode(event){
+//fun little feature to make the html easier on the eyes
+function darkMode(){
 	if (dark_mode.checked){
 		cyGraph.cy.nodes().style('color', 'white');
 		cyGraph.cy.edges().style('color', 'white');
@@ -659,5 +664,4 @@ function darkMode(event){
 		menu.style.background = "url(https://i.pinimg.com/originals/84/a5/f1/84a5f1a03629dcc48efa7115b53f3bd6.jpg)";
 		informations.style.background = "url(https://i.pinimg.com/originals/84/a5/f1/84a5f1a03629dcc48efa7115b53f3bd6.jpg)";
 	}
-
 }
